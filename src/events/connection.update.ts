@@ -52,36 +52,39 @@ export const handler =
       }
       const code = await sock.requestPairingCode(number);
       console.log("code de connexion : " + code);
-    }
-    if (connection === "close") {
-      const reasonCode = new Boom(lastDisconnect?.error)?.output?.statusCode;
-      const shouldReconnect = reasonCode !== DisconnectReason.loggedOut;
-      logger.warn(
-        `Connection closed. Code: ${reasonCode}. Reconnecting? ${shouldReconnect}`
-      );
-
-      if (shouldReconnect) {
-        await delay(3000);
-        startBot();
-      } else {
-        logger.error(
-          "Logged out. Please delete auth_info and re-authenticate."
+    } else {
+      if (connection === "close") {
+        const reasonCode = new Boom(lastDisconnect?.error)?.output?.statusCode;
+        const shouldReconnect = reasonCode !== DisconnectReason.loggedOut;
+        logger.warn(
+          `Connection closed. Code: ${reasonCode}. Reconnecting? ${shouldReconnect}`
         );
-      }
-    } else if (connection === "open") {
-      logger.info("Connected to WhatsApp");
-      // Send a message to the bot's (self-DM)
-      try {
-        const selfId = sock.user?.id || sock.user?.jid;
-        if (selfId) {
-          await sock.sendMessage(selfId, {
-            text: `*Thank you for Using Nexos Bot!* \n\n - *Official Discord Server:* https://discord.com/invite/A3euTAVqHv \n - *Server Time:* ${new Date().toLocaleString()} \n\n We ❤️ contributions!`,
-          });
+
+        if (shouldReconnect) {
+          await delay(3000);
+          startBot();
         } else {
-          logger.warn("Could not determine bot's own WhatsApp ID for self-DM.");
+          logger.error(
+            "Logged out. Please delete auth_info and re-authenticate."
+          );
         }
-      } catch (err) {
-        logger.error("Failed to send self-DM:", err);
+      } else if (connection === "open") {
+        logger.info("Connected to WhatsApp");
+        // Send a message to the bot's (self-DM)
+        try {
+          const selfId = sock.user?.id || sock.user?.jid;
+          if (selfId) {
+            await sock.sendMessage(selfId, {
+              text: `*Thank you for Using Nexos Bot!* \n\n - *Official Discord Server:* https://discord.com/invite/A3euTAVqHv \n - *Server Time:* ${new Date().toLocaleString()} \n\n We ❤️ contributions!`,
+            });
+          } else {
+            logger.warn(
+              "Could not determine bot's own WhatsApp ID for self-DM."
+            );
+          }
+        } catch (err) {
+          logger.error("Failed to send self-DM:", err);
+        }
       }
     }
   };
