@@ -4,7 +4,7 @@
 bot:
   name: "GNDC Bot" # The display name of your bot
   description: "Je suis le bot de la GNDC, prêt pour servir dans l'objectif de rendre cette communauté actif via \n https://gndc.tech"
-  group_target: "120363402518590859@g.us"
+  group_target: "120363262943101221@g.us"
   author_jid: "237698340664@s.whatsapp.net"
   bot_number: "237675423112"
   online: true # Should the bot appear online?
