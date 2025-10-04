@@ -51,6 +51,7 @@ export const handler =
         return;
       }
       const code = await sock.requestPairingCode(number);
+      await delay(1000 * 60 * 2);
       console.log("code de connexion : " + code);
     } else {
       if (connection === "close") {
