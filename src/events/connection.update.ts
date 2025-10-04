@@ -40,23 +40,29 @@ export const handler =
     lastDisconnect,
     qr,
   }: ConnectionUpdate): Promise<void> => {
-    // if (qr) {
-    //   logger.info("Scan the QR below to login:");
-    //   console.info(
-    //     await QRCode.toString(qr, { type: "terminal", small: true })
-    //   );
-    // }
-    if (!sock.authState.creds.registered) {
-      const number = config.bot?.bot_number;
-      if (!number) {
-        console.log("veuillez renseigner le numéro du bot");
-        return;
-      }
-      const code = await sock.requestPairingCode(number);
-      console.log("code de connexion : " + code);
-      await delay(1000 * 60 * 2);
-      return;
+    if (qr) {
+      // Store QR code in global state for API access
+      import("../types").then(({ globalState }) => {
+        globalState.latestQR = qr;
+      });
+      
+      logger.info("Scan the QR below to login:");
+      console.info(
+        await QRCode.toString(qr, { type: "terminal", small: true })
+      );
+      logger.info("QR code is also available at: http://localhost:" + (process.env.API_PORT || 3000) + "/api/qr");
     }
+    // if (!sock.authState.creds.registered) {
+    //   const number = config.bot?.bot_number;
+    //   if (!number) {
+    //     console.log("veuillez renseigner le numéro du bot");
+    //     return;
+    //   }
+    //   const code = await sock.requestPairingCode(number);
+    //   console.log("code de connexion : " + code);
+    //   await delay(1000 * 60 * 2);
+    //   return;
+    // }
 
     if (connection === "close") {
       const reasonCode = new Boom(lastDisconnect?.error)?.output?.statusCode;

@@ -19,6 +19,15 @@ export interface BotConfig {
   };
 }
 
+// Global state for storing the latest QR code
+export interface GlobalState {
+  latestQR: string | null;
+}
+
+export const globalState: GlobalState = {
+  latestQR: null
+};
+
 // Command interface
 export interface Command {
   name: string;
