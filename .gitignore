@@ -1,0 +1,17 @@
+node_modules
+node_modules/
+
+auth_info
+auth_info/
+
+# TypeScript artifacts
+dist
+dist/
+*.tsbuildinfo
+.tscache/
+
+# Logs
+logs
+logs/
+
+*.env

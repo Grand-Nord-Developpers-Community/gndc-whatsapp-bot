@@ -1,0 +1,51 @@
+{
+  "name": "whatsapp-bot-baileys",
+  "version": "0.1.9",
+  "description": "This is a simple and powerful WhatsApp bot built using the [Baileys](https://github.com/WhiskeySockets/Baileys) library, an unofficial WhatsApp Web API for Node.js. It allows you to automate replies, handle user messages, and create intelligent bot logic.",
+  "main": "dist/index.js",
+  "scripts": {
+    "start": "node dist/index.js",
+    "dev": "ts-node-dev --respawn src/index.ts",
+    "build": "tsc",
+    "watch": "tsc -w",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "bot",
+    "whatsapp-bot",
+    "baileys"
+  ],
+  "author": "nexoscreator",
+  "license": "MIT",
+  "dependencies": {
+    "@hapi/boom": "^10.0.1",
+    "@whiskeysockets/baileys": "^6.7.18",
+    "axios": "^1.6.2",
+    "cheerio": "^1.0.0-rc.12",
+    "cors": "^2.8.5",
+    "dotenv": "^16.3.1",
+    "express": "^4.21.2",
+    "js-yaml": "^4.1.0",
+    "link-preview-js": "^3.1.0",
+    "multer": "^1.4.5-lts.1",
+    "node-cache": "^5.1.2",
+    "openai": "^6.1.0",
+    "pino": "^9.7.0",
+    "qrcode": "^1.5.4",
+    "sharp": "^0.32.6"
+  },
+  "devDependencies": {
+    "@types/cors": "^2.8.19",
+    "@types/dotenv": "^8.2.0",
+    "@types/express": "^4.17.17",
+    "@types/js-yaml": "^4.0.9",
+    "@types/multer": "^1.4.7",
+    "@types/node": "^20.11.0",
+    "@types/qrcode": "^1.5.5",
+    "nodemon": "^3.1.10",
+    "pino-pretty": "^13.1.1",
+    "ts-node": "^10.9.2",
+    "ts-node-dev": "^2.0.0",
+    "typescript": "^5.3.3"
+  }
+}
