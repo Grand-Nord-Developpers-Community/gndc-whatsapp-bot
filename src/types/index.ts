@@ -10,6 +10,7 @@ export interface BotConfig {
     online?: boolean;
     prefix?: string;
     history?: boolean;
+    bot_number: string;
     author_jid?: string;
   };
   logging?: {
