@@ -7,9 +7,6 @@ import config from "../utils";
 import cors from "cors";
 import NodeCache from "node-cache";
 import QRCode from "qrcode";
-import path from "path";
-import multer from "multer";
-import fs from "fs";
 //cache participant
 const cacheUser = new NodeCache({ stdTTL: 60 * 5 });
 
