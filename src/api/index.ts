@@ -216,5 +216,112 @@ function createMessageRoutes(sock: WASocket, logger: Logger) {
     }
   });
 
+  //send vote
+  router.post("/vote", async (req, res) => {
+    try {
+      const {
+        groupId = config.bot?.group_target,
+        message: msg,
+        tagAll,
+        targetAdmin,
+        option,
+      } = req.body;
+      console.log(req.body);
+      if (!groupId || !msg) {
+        return res.status(400).json({
+          success: false,
+          message: "Group ID and message are required",
+        });
+      }
+      if (!cacheUser.get("Group_user")) {
+        const chats = await sock.groupFetchAllParticipating();
+        const groupMembers = chats[groupId].participants.map((member) => ({
+          jid: member.id,
+          name: member.name || member.id.split("@")[0],
+          id: member.lid,
+        }));
+        cacheUser.set(
+          "Group_user",
+          groupMembers.map((member) => member.jid)
+        );
+        console.log(groupMembers);
+      }
+      if (!option) {
+        return res.status(400).json({
+          success: false,
+          message: "Option is required",
+        });
+      }
+      await sock.sendMessage(groupId, {
+        poll: {
+          name: msg,
+          values: option,
+        },
+      });
+    } catch (error) {
+      logger.error(error, "Failed to send vote message");
+      res.status(500).json({
+        success: false,
+        message: "Failed to send vote message",
+        error: (error as Error).message,
+      });
+    }
+  });
+
+  //image
+  router.post("/image", async (req, res) => {
+    try {
+      const {
+        groupId = config.bot?.group_target,
+        message: msg,
+        tagAll,
+        targetAdmin,
+        option,
+      } = req.body;
+      console.log(req.body);
+      if (!groupId || !msg) {
+        return res.status(400).json({
+          success: false,
+          message: "Group ID and message are required",
+        });
+      }
+      if (!cacheUser.get("Group_user")) {
+        const chats = await sock.groupFetchAllParticipating();
+        const groupMembers = chats[groupId].participants.map((member) => ({
+          jid: member.id,
+          name: member.name || member.id.split("@")[0],
+          id: member.lid,
+        }));
+        cacheUser.set(
+          "Group_user",
+          groupMembers.map((member) => member.jid)
+        );
+        console.log(groupMembers);
+      }
+      if (!option) {
+        return res.status(400).json({
+          success: false,
+          message: "Option is required",
+        });
+      }
+      await sock.sendMessage(groupId, {
+        image: { url: option.profil },
+        caption: msg,
+        mentions: tagAll ? cacheUser.get("Group_user") : undefined,
+      });
+      res.status(200).json({
+        success: true,
+        message: "Image message sent successfully",
+      });
+    } catch (error) {
+      logger.error(error, "Failed to send image message");
+      res.status(500).json({
+        success: false,
+        message: "Failed to send image message",
+        error: (error as Error).message,
+      });
+    }
+  });
+
   return router;
 }
