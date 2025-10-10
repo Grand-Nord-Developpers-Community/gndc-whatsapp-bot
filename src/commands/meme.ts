@@ -34,7 +34,7 @@ export async function execute(
     console.log("L'IA va choisir elle-même un sujet et créer un mème !\n");
 
     // Générer un seul mème aléatoire
-    const result = await generator.generateRandomMeme();
+    const result = await generator.generate();
     const formattedResponse = generator.formatResponse(result);
     console.log(formattedResponse);
   } catch (error) {

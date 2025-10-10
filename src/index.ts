@@ -14,6 +14,7 @@ import config from "./utils";
 import { Command, EventHandler, ExtendedWASocket } from "./types";
 import { initializeApi } from "./api";
 import NodeCache from "node-cache";
+import { initializeCron } from "./cron";
 
 // Logging via pino
 const logDir = path.join(__dirname, "..", "logs");
@@ -107,6 +108,7 @@ async function startBot(): Promise<void> {
 
   // Initialize Express API server
   initializeApi(sock, logger);
+  initializeCron(sock, logger);
 }
 
 startBot();
