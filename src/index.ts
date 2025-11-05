@@ -107,7 +107,11 @@ async function startBot(): Promise<void> {
   }
 
   // Initialize Express API server
-  initializeApi(sock, logger);
+  //initializeApi(sock, logger);
+  import("./types").then(({ globalState }) => {
+    globalState.sock = sock;
+    globalState.logger = logger;
+  });
   initializeCron(sock, logger);
 }
 
