@@ -4,17 +4,31 @@
  */
 import fs from "fs";
 import yaml from "js-yaml";
+import path from "path";
 import { BotConfig } from "./types";
-import dotenv from "dotenv";
-dotenv.config();
+
 let config: BotConfig = {};
 try {
-  const isOnNetlify = process.env.NETLIFY;
-  const file = fs.readFileSync(
-    isOnNetlify ? "../bot.yml" : "./bot.yml",
-    "utf8"
-  );
-  config = yaml.load(file) as BotConfig;
+  // Try multiple possible locations for bot.yml
+  const possiblePaths = [
+    path.join(process.cwd(), "bot.yml"),
+    path.join(__dirname, "..", "bot.yml"),
+    path.join(__dirname, "..", "..", "bot.yml"), // For Netlify functions
+  ];
+
+  let configFile: string | null = null;
+  for (const configPath of possiblePaths) {
+    if (fs.existsSync(configPath)) {
+      configFile = fs.readFileSync(configPath, "utf8");
+      break;
+    }
+  }
+
+  if (!configFile) {
+    throw new Error("Could not find bot.yml in any of the expected locations");
+  }
+
+  config = yaml.load(configFile) as BotConfig;
 } catch (e) {
   console.error("⚠️ Failed to load bot.yml:", e);
 }
