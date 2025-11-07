@@ -16,9 +16,8 @@ const cacheUser = new NodeCache({ stdTTL: 60 * 5 });
  * @param logger - Logger instance
  * @returns Express app instance
  */
-export function initializeApi(sock: WASocket, logger: Logger) {
+export function createApp(sock: WASocket, logger: Logger) {
   const app = express();
-  const PORT = process.env.API_PORT || 3000;
 
   // Middleware
   app.use(cors());
@@ -127,6 +126,13 @@ export function initializeApi(sock: WASocket, logger: Logger) {
 
   // API routes
   app.use("/api/messages", createMessageRoutes(sock, logger));
+
+  return app;
+}
+
+export function initializeApi(sock: WASocket, logger: Logger) {
+  const app = createApp(sock, logger);
+  const PORT = process.env.API_PORT || 3000;
 
   // Start server
   const server = app.listen(PORT, () => {

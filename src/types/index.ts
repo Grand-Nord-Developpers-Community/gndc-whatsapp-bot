@@ -22,10 +22,14 @@ export interface BotConfig {
 // Global state for storing the latest QR code
 export interface GlobalState {
   latestQR: string | null;
+  sock?: WASocket;
+  logger?: Logger;
 }
 
 export const globalState: GlobalState = {
-  latestQR: null
+  latestQR: null,
+  sock: undefined,
+  logger: undefined,
 };
 
 // Command interface

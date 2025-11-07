@@ -106,8 +106,16 @@ async function startBot(): Promise<void> {
     }
   }
 
-  // Initialize Express API server
-  initializeApi(sock, logger);
+  // Initialize Express API server when running in a non-serverless/dev environment.
+  // When deployed to Netlify Functions the Express app will be served via the function
+  // and the long-running bot will expose the socket on `globalState` for the function to use.
+  if (!process.env.NETLIFY) {
+    initializeApi(sock, logger);
+  }
+  import("./types").then(({ globalState }) => {
+    globalState.sock = sock;
+    globalState.logger = logger;
+  });
   initializeCron(sock, logger);
 }
 
