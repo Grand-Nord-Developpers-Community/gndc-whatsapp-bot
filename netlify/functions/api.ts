@@ -10,12 +10,10 @@ let botStarting: Promise<void> | null = null;
 export const handler: Handler = async (event, context) => {
   // Start the bot if it hasn't been started yet
   if (!botStarting) {
-    try {
-      botStarting = startBot();
-    } catch (error) {
+    botStarting = startBot().catch((error: Error) => {
       console.error("Failed to start bot:", error);
       throw error;
-    }
+    });
   }
 
   try {
