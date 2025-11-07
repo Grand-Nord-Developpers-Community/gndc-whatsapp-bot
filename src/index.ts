@@ -16,23 +16,38 @@ import { initializeApi } from "./api";
 import NodeCache from "node-cache";
 import { initializeCron } from "./cron";
 
-// Logging via pino
-const logDir = path.join(__dirname, "..", "logs");
-if (!fs.existsSync(logDir)) {
-  fs.mkdirSync(logDir);
-}
-const logFile = path.join(
-  logDir,
-  `${new Date().toISOString().slice(0, 10)}.log`
-);
+// Logging helper: create a logger at runtime so importing this module
+// (for example by Netlify Functions) doesn't attempt to write to disk.
+function createLogger() {
+  const level = config.logging?.level || "info";
 
-const logger = pino(
-  {
-    level: config.logging?.level || "info",
-    transport: { target: "pino-pretty" },
-  },
-  pino.destination(logFile)
-);
+  // In a serverless / Netlify Functions environment the filesystem may be read-only.
+  // Avoid creating log directories or writing files there; log to stdout instead.
+  if (process.env.NETLIFY) {
+    return pino({ level, transport: { target: "pino-pretty" } });
+  }
+
+  const logDir = path.join(__dirname, "..", "logs");
+  try {
+    if (!fs.existsSync(logDir)) {
+      fs.mkdirSync(logDir, { recursive: true });
+    }
+    const logFile = path.join(
+      logDir,
+      `${new Date().toISOString().slice(0, 10)}.log`
+    );
+    return pino(
+      { level, transport: { target: "pino-pretty" } },
+      pino.destination(logFile)
+    );
+  } catch (e) {
+    // If writing to disk fails for any reason, fall back to stdout.
+    // Do not rethrow — we don't want the module import to crash.
+    // eslint-disable-next-line no-console
+    console.error("Could not create log directory, falling back to stdout:", e);
+    return pino({ level, transport: { target: "pino-pretty" } });
+  }
+}
 
 /**
  * Loads all command modules from the commands directory.
@@ -73,6 +88,7 @@ if (fs.existsSync(eventsDir)) {
 export const groupCache = new NodeCache({ stdTTL: 5 * 60, useClones: false });
 export const gloBalCache = new NodeCache({ stdTTL: 5 * 60, useClones: false });
 export async function startBot(): Promise<void> {
+  const logger = createLogger();
   const { state, saveCreds } = await useMultiFileAuthState("auth_info");
   const { version, isLatest } = await fetchLatestBaileysVersion();
   logger.info(`Using Baileys v${version.join(".")}, Latest: ${isLatest}`);
@@ -119,4 +135,12 @@ export async function startBot(): Promise<void> {
   initializeCron(sock, logger);
 }
 
-startBot();
+// Only auto-start the bot when this file is run directly (e.g., `node src/index.js` or ts-node).
+// When imported by Netlify Functions we don't auto-start; the function will call `startBot()`.
+if (require.main === module) {
+  startBot().catch((err) => {
+    // eslint-disable-next-line no-console
+    console.error("Failed to start bot:", err);
+    process.exit(1);
+  });
+}
