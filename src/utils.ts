@@ -5,10 +5,15 @@
 import fs from "fs";
 import yaml from "js-yaml";
 import { BotConfig } from "./types";
-
+import dotenv from "dotenv";
+dotenv.config();
 let config: BotConfig = {};
 try {
-  const file = fs.readFileSync("./bot.yml", "utf8");
+  const isOnNetlify = process.env.NETLIFY;
+  const file = fs.readFileSync(
+    isOnNetlify ? "../bot.yml" : "./bot.yml",
+    "utf8"
+  );
   config = yaml.load(file) as BotConfig;
 } catch (e) {
   console.error("⚠️ Failed to load bot.yml:", e);
