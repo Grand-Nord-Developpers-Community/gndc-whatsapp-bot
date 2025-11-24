@@ -1,7 +1,7 @@
 import { proto, WASocket } from "@whiskeysockets/baileys";
 import { EventType } from "../types/index.js";
 import { gloBalCache } from "../index.js";
-import config from "../utils.js";
+import config, { resolveTargetGroups } from "../utils.js";
 // import dotenv from "dotenv";
 // dotenv.config();
 /**
@@ -28,7 +28,13 @@ export async function execute(
   msg: proto.IWebMessageInfo,
   args: string[]
 ): Promise<void> {
-  if (from !== config.bot?.group_target) {
+  const ids = await resolveTargetGroups("allowedcommand", "events");
+  const isAllowed = ids.some((t) => t.id === from);
+  if (!isAllowed && from.endsWith("@g.us")) {
+    return;
+  }
+  const isAllowedInbox = ids[0].allow_inbox?.includes("events");
+  if (!isAllowedInbox) {
     return;
   }
   // Send typing indicator

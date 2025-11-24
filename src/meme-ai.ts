@@ -30,7 +30,7 @@ export class GNDCMemeGenerator extends GNDCBaseGenerator {
   private memeTopics: string[];
 
   constructor(imgflipUsername: string, imgflipPassword: string) {
-    super();
+    super({ model: "gpt-4.1-mini" });
     this.imgflipUsername = imgflipUsername;
     this.imgflipPassword = imgflipPassword;
 
