@@ -71,8 +71,7 @@ console.log(
  */
 export const groupCache = new NodeCache({ stdTTL: 5 * 60, useClones: false });
 export const gloBalCache = new NodeCache({ stdTTL: 5 * 60, useClones: false });
-export async function startBot(): Promise<void> {
-  const logger = createLogger();
+async function startBot(): Promise<void> {
   const { state, saveCreds } = await useMultiFileAuthState("auth_info");
   const { version, isLatest } = await fetchLatestBaileysVersion();
   logger.info(`Using Baileys v${version.join(".")}, Latest: ${isLatest}`);
