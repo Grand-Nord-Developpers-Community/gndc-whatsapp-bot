@@ -1,7 +1,7 @@
 import { proto, WASocket } from "@whiskeysockets/baileys";
 import { BlogPostResponse, ForumPostResponse } from "../types/index.js";
 import { gloBalCache } from "../index.js";
-import config from "../utils.js";
+import config, { resolveTargetGroups } from "../utils.js";
 /**
  * Ask a question to the chatbot with web access capabilities
  * Usage: !ask your question here
@@ -27,7 +27,13 @@ export async function execute(
   msg: proto.IWebMessageInfo,
   args: string[]
 ): Promise<void> {
-  if (from !== config.bot?.group_target) {
+  const ids = await resolveTargetGroups("allowedcommand", "forums");
+  const isAllowed = ids.some((t) => t.id === from);
+  if (!isAllowed && from.endsWith("@g.us")) {
+    return;
+  }
+  const isAllowedInbox = ids[0].allow_inbox?.includes("forums");
+  if (!isAllowedInbox) {
     return;
   }
   if (!args.length) {

@@ -26,7 +26,7 @@ export class GNDCQuizGenerator extends GNDCBaseGenerator {
   private tools: OpenAI.Chat.Completions.ChatCompletionTool[];
 
   constructor() {
-    super();
+    super({ model: "gpt-4.1-mini" });
 
     this.techDomains = [
       "Programmation Python",

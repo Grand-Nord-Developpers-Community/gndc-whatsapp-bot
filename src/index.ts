@@ -50,7 +50,7 @@ Object.values(commandModules).forEach((mod: any) => {
     commands.set(mod.name, mod);
   }
 });
-console.log("Commands loaded:", Array.from(commands.keys()));
+// console.log("Commands loaded:", Array.from(commands.keys()));
 
 /**
  * Loads all event handler modules from the events directory.
@@ -62,15 +62,19 @@ Object.values(eventModules).forEach((mod: any) => {
     eventHandlers.push(mod);
   }
 });
-console.log(
-  "Events loaded:",
-  eventHandlers.map((e) => e.eventName)
-);
+// console.log(
+//   "Events loaded:",
+//   eventHandlers.map((e) => e.eventName)
+// );
 /**
  * Starts the WhatsApp bot and registers event handlers.
  */
 export const groupCache = new NodeCache({ stdTTL: 5 * 60, useClones: false });
 export const gloBalCache = new NodeCache({ stdTTL: 5 * 60, useClones: false });
+export const gloBalSettingCache = new NodeCache({
+  stdTTL: 60 * 60,
+  useClones: false,
+});
 async function startBot(): Promise<void> {
   const { state, saveCreds } = await useMultiFileAuthState("auth_info");
   const { version, isLatest } = await fetchLatestBaileysVersion();
@@ -107,7 +111,7 @@ async function startBot(): Promise<void> {
   }
   console.log("hi");
   // Initialize Express API server
-  // initializeApi(sock, logger);
+  initializeApi(sock, logger);
   initializeCron(sock, logger);
 }
 

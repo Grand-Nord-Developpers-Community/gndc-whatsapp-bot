@@ -3,13 +3,11 @@ import { WASocket } from "@whiskeysockets/baileys";
 import dotenv from "dotenv";
 dotenv.config();
 import { Logger } from "pino";
-import config from "../utils.js";
+import config, { resolveTargetGroups, sendGroupMessage } from "../utils.js";
 import cors from "cors";
 import NodeCache from "node-cache";
 import QRCode from "qrcode";
-//cache participant
-const cacheUser = new NodeCache({ stdTTL: 60 * 5 });
-
+import { BotSettings } from "../types/index.js";
 /**
  * Initialize the Express API server
  * @param sock - WhatsApp socket instance
@@ -159,61 +157,60 @@ export interface Props {
     leaderboard: boolean;
     profil: string;
   };
+  data: {
+    url?: string;
+    options?: string[];
+  };
 }
 function createMessageRoutes(sock: WASocket, logger: Logger) {
   const router = express.Router();
 
   // Send text message
   router.post("/text", async (req, res) => {
-    console.log("handle requet from a server !!");
+    console.log("handle request from server!");
+
     try {
-      const {
-        groupId = config.bot?.group_target,
-        message: msg,
-        tagAll,
-        targetAdmin,
-        option,
-      } = req.body as Props;
-      console.log(req.body);
-      if (!groupId || !msg) {
+      const { message: msg, tagAll, option, ...rest } = req.body as Props;
+
+      if (!msg) {
         return res.status(400).json({
           success: false,
-          message: "Group ID and message are required",
+          message: "Message is required",
         });
-      }
-      if (!cacheUser.get("Group_user")) {
-        const chats = await sock.groupFetchAllParticipating();
-        const groupMembers = chats[groupId].participants.map((member) => ({
-          jid: member.id,
-          name: member.name || member.id.split("@")[0],
-          id: member.lid,
-        }));
-        cacheUser.set(
-          "Group_user",
-          groupMembers.map((member) => member.jid)
-        );
-        console.log(groupMembers);
       }
 
-      if (!option) {
-        await sock.sendMessage(groupId, {
-          text: msg,
-          mentions: tagAll ? cacheUser.get("Group_user") : undefined,
-        });
-      } else {
-        await sock.sendMessage(groupId, {
-          image: { url: option.profil },
-          caption: msg,
-          mentions: tagAll ? cacheUser.get("Group_user") : undefined,
-        });
+      const targets = await resolveTargetGroups("allowedevent", "site-update");
+
+      for (const t of targets) {
+        // await sendToGroup(sock, t.id, msg, t.mentions, rest.option);
+        if (option) {
+          await sendGroupMessage({
+            sock,
+            groupId: t.id,
+            type: "image",
+            msg,
+            tagAll,
+            data: {
+              url: option.profil,
+            },
+          });
+        } else {
+          await sendGroupMessage({
+            sock,
+            groupId: t.id,
+            type: "text",
+            msg,
+            tagAll,
+          });
+        }
       }
 
       res.status(200).json({
         success: true,
-        message: "Text message sent successfully",
+        message: "Message sent successfully",
       });
     } catch (error) {
-      logger.error(error, "Failed to send text message");
+      logger.error(error, "Failed to send message");
       res.status(500).json({
         success: false,
         message: "Failed to send message",
@@ -225,44 +222,34 @@ function createMessageRoutes(sock: WASocket, logger: Logger) {
   //send vote
   router.post("/vote", async (req, res) => {
     try {
-      const {
-        groupId = config.bot?.group_target,
-        message: msg,
-        tagAll,
-        targetAdmin,
-        option,
-      } = req.body;
-      console.log(req.body);
-      if (!groupId || !msg) {
+      const { message: msg, tagAll, option, data, ...rest } = req.body as Props;
+
+      if (!msg) {
         return res.status(400).json({
           success: false,
-          message: "Group ID and message are required",
+          message: "Message is required",
         });
       }
-      if (!cacheUser.get("Group_user")) {
-        const chats = await sock.groupFetchAllParticipating();
-        const groupMembers = chats[groupId].participants.map((member) => ({
-          jid: member.id,
-          name: member.name || member.id.split("@")[0],
-          id: member.lid,
-        }));
-        cacheUser.set(
-          "Group_user",
-          groupMembers.map((member) => member.jid)
-        );
-        console.log(groupMembers);
-      }
-      if (!option) {
-        return res.status(400).json({
-          success: false,
-          message: "Option is required",
+
+      const targets = await resolveTargetGroups("allowedevent", "site-update");
+
+      for (const t of targets) {
+        // await sendToGroup(sock, t.id, msg, t.mentions, rest.option);
+        await sendGroupMessage({
+          sock,
+          groupId: t.id,
+          type: "poll",
+          msg,
+          tagAll,
+          data: {
+            options: data.options,
+          },
         });
       }
-      await sock.sendMessage(groupId, {
-        poll: {
-          name: msg,
-          values: option,
-        },
+
+      res.status(200).json({
+        success: true,
+        message: "Message sent successfully",
       });
     } catch (error) {
       logger.error(error, "Failed to send vote message");
@@ -277,44 +264,40 @@ function createMessageRoutes(sock: WASocket, logger: Logger) {
   //image
   router.post("/image", async (req, res) => {
     try {
-      const {
-        groupId = config.bot?.group_target,
-        message: msg,
-        tagAll,
-        targetAdmin,
-        option,
-      } = req.body;
-      console.log(req.body);
-      if (!groupId || !msg) {
+      const { message: msg, tagAll, option, data, ...rest } = req.body as Props;
+
+      if (!msg) {
         return res.status(400).json({
           success: false,
-          message: "Group ID and message are required",
+          message: "Message is required",
         });
       }
-      if (!cacheUser.get("Group_user")) {
-        const chats = await sock.groupFetchAllParticipating();
-        const groupMembers = chats[groupId].participants.map((member) => ({
-          jid: member.id,
-          name: member.name || member.id.split("@")[0],
-          id: member.lid,
-        }));
-        cacheUser.set(
-          "Group_user",
-          groupMembers.map((member) => member.jid)
-        );
-        console.log(groupMembers);
+
+      const targets = await resolveTargetGroups("allowedevent", "site-update");
+
+      for (const t of targets) {
+        if (option) {
+          await sendGroupMessage({
+            sock,
+            groupId: t.id,
+            type: "image",
+            msg,
+            tagAll,
+            data: {
+              url: option.profil,
+            },
+          });
+        } else {
+          await sendGroupMessage({
+            sock,
+            groupId: t.id,
+            type: "image",
+            msg,
+            tagAll,
+            data,
+          });
+        }
       }
-      if (!option) {
-        return res.status(400).json({
-          success: false,
-          message: "Option is required",
-        });
-      }
-      await sock.sendMessage(groupId, {
-        image: { url: option.profil },
-        caption: msg,
-        mentions: tagAll ? cacheUser.get("Group_user") : undefined,
-      });
       res.status(200).json({
         success: true,
         message: "Image message sent successfully",
