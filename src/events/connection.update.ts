@@ -7,8 +7,8 @@ import { Boom } from "@hapi/boom";
 import { DisconnectReason, WASocket } from "@whiskeysockets/baileys";
 import { delay } from "@whiskeysockets/baileys";
 import { Logger } from "pino";
-import { ExtendedWASocket } from "../types";
-import config from "../utils";
+import { ExtendedWASocket } from "../types/index.js";
+import config from "../utils.js";
 
 interface ConnectionUpdate {
   connection?: "close" | "open";
@@ -42,15 +42,19 @@ export const handler =
   }: ConnectionUpdate): Promise<void> => {
     if (qr) {
       // Store QR code in global state for API access
-      import("../types").then(({ globalState }) => {
+      import("../types/index.js").then(({ globalState }) => {
         globalState.latestQR = qr;
       });
-      
+
       logger.info("Scan the QR below to login:");
       console.info(
         await QRCode.toString(qr, { type: "terminal", small: true })
       );
-      logger.info("QR code is also available at: http://localhost:" + (process.env.API_PORT || 3000) + "/api/qr");
+      logger.info(
+        "QR code is also available at: http://localhost:" +
+          (process.env.API_PORT || 3000) +
+          "/api/qr"
+      );
     }
     // if (!sock.authState.creds.registered) {
     //   const number = config.bot?.bot_number;

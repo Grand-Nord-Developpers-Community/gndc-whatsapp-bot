@@ -5,7 +5,7 @@
 import fs from "fs";
 import yaml from "js-yaml";
 import path from "path";
-import { BotConfig } from "./types";
+import { BotConfig } from "./types/index.js";
 
 let config: BotConfig = {};
 try {

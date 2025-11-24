@@ -10,78 +10,62 @@ import {
 import fs from "fs";
 import path from "path";
 import pino from "pino";
-import config from "./utils";
-import { Command, EventHandler, ExtendedWASocket } from "./types";
-import { initializeApi } from "./api";
+import config from "./utils.js";
+import { Command, EventHandler, ExtendedWASocket } from "./types/index.js";
+import { initializeApi } from "./api/index.js";
 import NodeCache from "node-cache";
-import { initializeCron } from "./cron";
+import { initializeCron } from "./cron/index.js";
+import { fileURLToPath } from "url";
+import * as commandModules from "./commands/index.js";
+import * as eventModules from "./events/index.js";
+// Re-implement __dirname for ESM
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
-// Logging helper: create a logger at runtime so importing this module
-// (for example by Netlify Functions) doesn't attempt to write to disk.
-function createLogger() {
-  const level = config.logging?.level || "info";
-
-  // In a serverless / Netlify Functions environment the filesystem may be read-only.
-  // Avoid creating log directories or writing files there; log to stdout instead.
-  if (process.env.NETLIFY) {
-    return pino({ level, transport: { target: "pino-pretty" } });
-  }
-
-  const logDir = path.join(__dirname, "..", "logs");
-  try {
-    if (!fs.existsSync(logDir)) {
-      fs.mkdirSync(logDir, { recursive: true });
-    }
-    const logFile = path.join(
-      logDir,
-      `${new Date().toISOString().slice(0, 10)}.log`
-    );
-    return pino(
-      { level, transport: { target: "pino-pretty" } },
-      pino.destination(logFile)
-    );
-  } catch (e) {
-    // If writing to disk fails for any reason, fall back to stdout.
-    // Do not rethrow — we don't want the module import to crash.
-    // eslint-disable-next-line no-console
-    console.error("Could not create log directory, falling back to stdout:", e);
-    return pino({ level, transport: { target: "pino-pretty" } });
-  }
+// Logging via pino
+const logDir = path.join(__dirname, "..", "logs");
+if (!fs.existsSync(logDir)) {
+  fs.mkdirSync(logDir);
 }
+const logFile = path.join(
+  logDir,
+  `${new Date().toISOString().slice(0, 10)}.log`
+);
+//@ts-ignore
+const logger = pino(
+  {
+    level: config.logging?.level || "info",
+    transport: { target: "pino-pretty" },
+  },
+  pino.destination(logFile)
+);
 
 /**
  * Loads all command modules from the commands directory.
  * @returns {Map<string, Command>}
  */
-const commands = new Map<string, Command>();
-const commandsDir = path.join(__dirname, "commands");
-if (fs.existsSync(commandsDir)) {
-  fs.readdirSync(commandsDir).forEach((file) => {
-    if (file.endsWith(".ts") || file.endsWith(".js")) {
-      const cmd = require(`./commands/${file}`);
-      commands.set(cmd.name, cmd);
-    }
-  });
-}
+export const commands = new Map<string, Command>();
+Object.values(commandModules).forEach((mod: any) => {
+  if (mod.name && mod.execute) {
+    commands.set(mod.name, mod);
+  }
+});
+console.log("Commands loaded:", Array.from(commands.keys()));
 
 /**
  * Loads all event handler modules from the events directory.
  * @returns {Array<EventHandler>}
  */
-const eventsDir = path.join(__dirname, "events");
-const eventHandlers: EventHandler[] = [];
-if (fs.existsSync(eventsDir)) {
-  const eventFiles = fs
-    .readdirSync(eventsDir)
-    .filter((f) => f.endsWith(".ts") || f.endsWith(".js"));
-  for (const file of eventFiles) {
-    const eventModule = require(`./events/${file}`);
-    if (eventModule.eventName && typeof eventModule.handler === "function") {
-      eventHandlers.push(eventModule);
-    }
+export const eventHandlers: EventHandler[] = [];
+Object.values(eventModules).forEach((mod: any) => {
+  if (mod.eventName && typeof mod.handler === "function") {
+    eventHandlers.push(mod);
   }
-}
-
+});
+console.log(
+  "Events loaded:",
+  eventHandlers.map((e) => e.eventName)
+);
 /**
  * Starts the WhatsApp bot and registers event handlers.
  */
@@ -96,6 +80,7 @@ export async function startBot(): Promise<void> {
     version,
     auth: state,
     printQRInTerminal: false,
+    //@ts-ignore
     logger: pino({ level: "silent" }),
     browser: ["NexosBot", "Opera GX", "120.0.5543.204"],
     generateHighQualityLinkPreview: true,
@@ -121,26 +106,10 @@ export async function startBot(): Promise<void> {
       sock.ev.on(eventName, handler(sock, logger));
     }
   }
-
-  // Initialize Express API server when running in a non-serverless/dev environment.
-  // When deployed to Netlify Functions the Express app will be served via the function
-  // and the long-running bot will expose the socket on `globalState` for the function to use.
-  import("./types").then(({ globalState }) => {
-    globalState.sock = sock;
-    globalState.logger = logger;
-  });
-  if (!process.env.NETLIFY) {
-    initializeApi(sock, logger);
-  }
+  console.log("hi");
+  // Initialize Express API server
+  // initializeApi(sock, logger);
   initializeCron(sock, logger);
 }
 
-// Only auto-start the bot when this file is run directly (e.g., `node src/index.js` or ts-node).
-// When imported by Netlify Functions we don't auto-start; the function will call `startBot()`.
-if (require.main === module) {
-  startBot().catch((err) => {
-    // eslint-disable-next-line no-console
-    console.error("Failed to start bot:", err);
-    process.exit(1);
-  });
-}
+await startBot();

@@ -1,5 +1,5 @@
 import OpenAI from "openai";
-import { BaseResult, GNDCBaseGenerator } from "./ai";
+import { BaseResult, GNDCBaseGenerator } from "./ai.js";
 
 interface QuizOption {
   id: string;

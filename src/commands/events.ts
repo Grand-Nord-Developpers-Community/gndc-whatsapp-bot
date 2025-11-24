@@ -1,9 +1,9 @@
 import { proto, WASocket } from "@whiskeysockets/baileys";
-import { BlogPostResponse, EventType, LeaderboardType } from "../types";
-import { gloBalCache } from "..";
-import config from "../utils";
-import dotenv from "dotenv";
-dotenv.config();
+import { EventType } from "../types/index.js";
+import { gloBalCache } from "../index.js";
+import config from "../utils.js";
+// import dotenv from "dotenv";
+// dotenv.config();
 /**
  * Ask a question to the chatbot with web access capabilities
  * Usage: !ask your question here
@@ -42,7 +42,7 @@ export async function execute(
       gloBalCache.set("GNDC-EVENT", data);
     }
     const data = gloBalCache.get("GNDC-EVENT") as EventType[];
-    let message = "Evenements en cours :*\n\n";
+    let message = "*Evenements en cours :*\n\n";
     let count = 1;
 
     for (const [_, e] of Object.entries(data.slice(0, 5))) {
@@ -58,10 +58,11 @@ export async function execute(
       from,
       {
         text: message || "pas de reponse !!",
-      },
-      {
-        quoted: msg,
+        mentions: [from],
       }
+      // {
+      //   quoted: { key: msg },
+      // }
     );
   } catch (error) {
     console.error("Error processing question:", error);

@@ -1,5 +1,5 @@
-import { WASocket } from "@whiskeysockets/baileys";
-import config from "../utils";
+import { proto, WASocket } from "@whiskeysockets/baileys";
+import config from "../utils.js";
 
 /**
  * Lists all available commands and their descriptions.
@@ -43,19 +43,30 @@ export const description = "List available commands.";
 export async function execute(
   sock: WASocket,
   from: string,
+  msg: proto.IMessageKey & {
+    remoteJidAlt?: string;
+    participantAlt?: string;
+    server_id?: string;
+    addressingMode?: string;
+    isViewOnce?: boolean;
+  },
   args: string[]
 ): Promise<void> {
+  console.log("Help command executed by:", from);
+  console.log(config);
   if (from === config.bot?.group_target) {
     await sock.sendMessage(from, {
       text: groupHelp,
+      mentions: [from],
     });
     return;
   }
   if (from === config.bot?.author_jid) {
     await sock.sendMessage(from, {
       text: helpText,
+      mentions: [from],
     });
     return;
   }
-  await sock.sendMessage(from, { text: inboxHelp });
+  await sock.sendMessage(from, { text: inboxHelp, mentions: [from] });
 }
