@@ -1,12 +1,12 @@
 import cron from "node-cron";
-import dotenv from "dotenv";
+import * as dotenv from "dotenv";
 dotenv.config();
-import { GNDCRedisStorage } from "../storage";
+import { GNDCRedisStorage } from "../storage.js";
 import { proto, WASocket } from "@whiskeysockets/baileys";
 import { Logger } from "pino";
-import { GNDCMemeGenerator } from "../meme-ai";
-import config from "../utils";
-import { GNDCQuizGenerator, Quiz } from "../quiz-ai";
+import { GNDCMemeGenerator } from "../meme-ai.js";
+import config from "../utils.js";
+import { GNDCQuizGenerator, Quiz } from "../quiz-ai.js";
 const storage = new GNDCRedisStorage();
 /**
  * Initialize the Express API server
@@ -41,21 +41,6 @@ export async function initializeCron(sock: WASocket, logger: Logger) {
   console.log("memeTask status:", memeTask.getNextRun());
   console.log("quizTask status:", quizTask.getNextRun());
   console.log("quizAnswerTask status:", quizAnswerTask.getNextRun());
-
-  // setInterval(async () => {
-  //   const job = await storage.get("quiz:answerJob");
-  //   if (job) {
-  //     const now = Date.now();
-  //     if (now >= job.timestamp) {
-  //       console.log(
-  //         "📚 Sending quiz answers and explanations (recovered job)..."
-  //       );
-
-  //       // Remove the job after execution
-  //       await storage.delete("quiz:answerJob");
-  //     }
-  //   }
-  // }, 2 * 60 * 60 * 1000); // Check every 2 hours
 
   async function sendMeme(sock: WASocket) {
     const generator = new GNDCMemeGenerator("mohamedconsole", "imgflip123#");
@@ -141,13 +126,13 @@ export async function initializeCron(sock: WASocket, logger: Logger) {
           process.env.TEST_GROUP_ID || config.bot?.group_target || "",
           {
             text: `*Réponse :* ${response}\n*Explication :* ${explication}`,
-          },
-          { quoted: msg }
+          }
+          // { quoted: { key: msg } }
         );
         await sock.sendMessage(
           process.env.TEST_GROUP_ID || config.bot?.group_target || "",
           {
-            pin: msg.key,
+            pin: msg.key!,
             type: 0,
           }
         );

@@ -1,7 +1,7 @@
 import { proto, WASocket } from "@whiskeysockets/baileys";
-import { BlogPostResponse } from "../types";
-import { gloBalCache } from "..";
-import config from "../utils";
+import { BlogPostResponse } from "../types/index.js";
+import { gloBalCache } from "../index.js";
+import config from "../utils.js";
 import dotenv from "dotenv";
 dotenv.config();
 /**
@@ -56,10 +56,11 @@ export async function execute(
       from,
       {
         text: message || "pas de reponse !!",
-      },
-      {
-        quoted: msg,
+        mentions: [from],
       }
+      // {
+      //   quoted: { key: msg },
+      // }
     );
   } catch (error) {
     console.error("Error processing question:", error);

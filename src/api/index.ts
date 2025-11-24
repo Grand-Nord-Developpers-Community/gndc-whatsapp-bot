@@ -3,7 +3,7 @@ import { WASocket } from "@whiskeysockets/baileys";
 import dotenv from "dotenv";
 dotenv.config();
 import { Logger } from "pino";
-import config from "../utils";
+import config from "../utils.js";
 import cors from "cors";
 import NodeCache from "node-cache";
 import QRCode from "qrcode";
@@ -38,7 +38,7 @@ export function initializeApi(sock: WASocket, logger: Logger) {
   // QR code endpoint
   app.get("/api/qr", async (req, res) => {
     try {
-      const { globalState } = await import("../types");
+      const { globalState } = await import("../types/index.js");
 
       if (!globalState.latestQR) {
         return res.status(404).json({

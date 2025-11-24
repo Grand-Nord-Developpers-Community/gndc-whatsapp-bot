@@ -3,7 +3,7 @@ import OpenAI from "openai";
 import dotenv from "dotenv";
 import axios from "axios";
 import { stringify } from "querystring";
-import { GNDCMemeGenerator } from "../meme-ai";
+import { GNDCMemeGenerator } from "../meme-ai.js";
 dotenv.config();
 /**
  * Ask a question to the chatbot with web access capabilities

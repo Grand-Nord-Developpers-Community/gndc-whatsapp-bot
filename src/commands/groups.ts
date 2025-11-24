@@ -1,5 +1,5 @@
 import { proto, WASocket } from "@whiskeysockets/baileys";
-import config from "../utils";
+import config from "../utils.js";
 
 /**
  * Lists all groups the user is currently in.

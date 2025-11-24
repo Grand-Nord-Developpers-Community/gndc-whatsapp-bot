@@ -1,7 +1,7 @@
 import { proto, WASocket } from "@whiskeysockets/baileys";
 import OpenAI from "openai";
-import dotenv from "dotenv";
-dotenv.config();
+// import * as dotenv from "dotenv";
+// dotenv.config();
 /**
  * Ask a question to the chatbot with web access capabilities
  * Usage: !ask your question here
@@ -106,15 +106,10 @@ forum:https://gndc.tech/forum
     // tool_choice: "auto",
     // include: ["web_search_call.action.sources"],
     // });
-    await sock.sendMessage(
-      from,
-      {
-        text: response.choices[0].message.content || "pas de reponse !!",
-      },
-      {
-        quoted: msg,
-      }
-    );
+    console.log(msg);
+    await sock.sendMessage(from, {
+      text: response.choices[0].message.content || "pas de reponse !!",
+    });
   } catch (error) {
     console.error("Error processing question:", error);
     await sock.sendMessage(from, {

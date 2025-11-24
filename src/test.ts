@@ -1,7 +1,7 @@
-import { GNDCMemeGenerator } from "./meme-ai";
-import { GNDCQuizGenerator } from "./quiz-ai";
-import { GNDCRedisStorage } from "./storage";
-import { exampleQuiz } from "./utils";
+// import { GNDCMemeGenerator } from "./meme-ai.js";
+// import { GNDCQuizGenerator } from "./quiz-ai";
+import { GNDCRedisStorage } from "./storage.js";
+import { exampleQuiz } from "./utils.js";
 
 async function main() {
   //const generator = new GNDCMemeGenerator("mohamedconsole", "imgflip123#");

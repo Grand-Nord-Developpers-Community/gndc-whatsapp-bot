@@ -10,11 +10,17 @@ import {
 import fs from "fs";
 import path from "path";
 import pino from "pino";
-import config from "./utils";
-import { Command, EventHandler, ExtendedWASocket } from "./types";
-import { initializeApi } from "./api";
+import config from "./utils.js";
+import { Command, EventHandler, ExtendedWASocket } from "./types/index.js";
+import { initializeApi } from "./api/index.js";
 import NodeCache from "node-cache";
-import { initializeCron } from "./cron";
+import { initializeCron } from "./cron/index.js";
+import { fileURLToPath } from "url";
+import * as commandModules from "./commands/index.js";
+import * as eventModules from "./events/index.js";
+// Re-implement __dirname for ESM
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 // Logging via pino
 const logDir = path.join(__dirname, "..", "logs");
@@ -25,7 +31,7 @@ const logFile = path.join(
   logDir,
   `${new Date().toISOString().slice(0, 10)}.log`
 );
-
+//@ts-ignore
 const logger = pino(
   {
     level: config.logging?.level || "info",
@@ -38,35 +44,28 @@ const logger = pino(
  * Loads all command modules from the commands directory.
  * @returns {Map<string, Command>}
  */
-const commands = new Map<string, Command>();
-const commandsDir = path.join(__dirname, "commands");
-if (fs.existsSync(commandsDir)) {
-  fs.readdirSync(commandsDir).forEach((file) => {
-    if (file.endsWith(".ts") || file.endsWith(".js")) {
-      const cmd = require(`./commands/${file}`);
-      commands.set(cmd.name, cmd);
-    }
-  });
-}
+export const commands = new Map<string, Command>();
+Object.values(commandModules).forEach((mod: any) => {
+  if (mod.name && mod.execute) {
+    commands.set(mod.name, mod);
+  }
+});
+console.log("Commands loaded:", Array.from(commands.keys()));
 
 /**
  * Loads all event handler modules from the events directory.
  * @returns {Array<EventHandler>}
  */
-const eventsDir = path.join(__dirname, "events");
-const eventHandlers: EventHandler[] = [];
-if (fs.existsSync(eventsDir)) {
-  const eventFiles = fs
-    .readdirSync(eventsDir)
-    .filter((f) => f.endsWith(".ts") || f.endsWith(".js"));
-  for (const file of eventFiles) {
-    const eventModule = require(`./events/${file}`);
-    if (eventModule.eventName && typeof eventModule.handler === "function") {
-      eventHandlers.push(eventModule);
-    }
+export const eventHandlers: EventHandler[] = [];
+Object.values(eventModules).forEach((mod: any) => {
+  if (mod.eventName && typeof mod.handler === "function") {
+    eventHandlers.push(mod);
   }
-}
-
+});
+console.log(
+  "Events loaded:",
+  eventHandlers.map((e) => e.eventName)
+);
 /**
  * Starts the WhatsApp bot and registers event handlers.
  */
@@ -80,6 +79,7 @@ async function startBot(): Promise<void> {
     version,
     auth: state,
     printQRInTerminal: false,
+    //@ts-ignore
     logger: pino({ level: "silent" }),
     browser: ["NexosBot", "Opera GX", "120.0.5543.204"],
     generateHighQualityLinkPreview: true,
@@ -105,10 +105,10 @@ async function startBot(): Promise<void> {
       sock.ev.on(eventName, handler(sock, logger));
     }
   }
-
+  console.log("hi");
   // Initialize Express API server
-  initializeApi(sock, logger);
+  // initializeApi(sock, logger);
   initializeCron(sock, logger);
 }
 
-startBot();
+await startBot();

@@ -4,8 +4,8 @@
 
 import { WASocket } from "@whiskeysockets/baileys";
 import { Logger } from "pino";
-import { Command, WAMessage } from "../types";
-import config from "../utils";
+import { Command, WAMessage } from "../types/index.js";
+import config from "../utils.js";
 
 const prefix = config.bot?.prefix || "!";
 
@@ -29,7 +29,7 @@ export const handler =
     const msg = messages[0];
     if (!msg.message) return;
 
-    const from = msg.key.remoteJid;
+    const from = msg.key?.remoteJid;
     if (!from) return;
 
     const text =

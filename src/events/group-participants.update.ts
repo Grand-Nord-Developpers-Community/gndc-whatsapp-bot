@@ -3,7 +3,7 @@
 
 import { WASocket } from "@whiskeysockets/baileys";
 import { Logger } from "pino";
-import { groupCache } from "..";
+import { groupCache } from "../index.js";
 
 export const eventName = "group-participants.update";
 

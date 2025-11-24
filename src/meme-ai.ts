@@ -1,5 +1,5 @@
 import OpenAI from "openai";
-import { GNDCBaseGenerator } from "./ai";
+import { GNDCBaseGenerator } from "./ai.js";
 
 interface MemeTemplate {
   id: string;
