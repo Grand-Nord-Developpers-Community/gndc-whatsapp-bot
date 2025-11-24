@@ -1,0 +1,18 @@
+[functions]
+  external_node_modules = [
+    "express",
+    "@whiskeysockets/baileys",
+    "jimp",
+    "sharp",
+    "pino",
+    "qrcode",
+    "node-cache"
+  ]
+  node_bundler = "esbuild"
+  # Include files needed by functions
+  included_files = ["bot.yml"]
+[[redirects]]
+  force = true
+  from = "/api/*"
+  status = 200
+  to = "/.netlify/functions/api/:splat"

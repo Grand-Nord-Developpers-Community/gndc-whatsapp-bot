@@ -6,12 +6,9 @@ export interface BotConfig {
   bot?: {
     name?: string;
     description: string;
-    group_target?: string;
     online?: boolean;
     prefix?: string;
     history?: boolean;
-    bot_number: string;
-    author_jid?: string;
   };
   logging?: {
     level?: string;
@@ -22,10 +19,14 @@ export interface BotConfig {
 // Global state for storing the latest QR code
 export interface GlobalState {
   latestQR: string | null;
+  sock?: WASocket;
+  logger?: Logger;
 }
 
 export const globalState: GlobalState = {
-  latestQR: null
+  latestQR: null,
+  sock: undefined,
+  logger: undefined,
 };
 
 // Command interface
@@ -114,3 +115,60 @@ export type EventType = {
     id: string;
   };
 };
+
+export interface Article {
+  number: number;
+  title: string;
+  link: string;
+  description: string;
+  pubDate: string;
+  creator: string;
+}
+
+export interface RSSItem {
+  title: string[];
+  link: string[];
+  description: string[];
+  pubDate: string[];
+  "dc:creator"?: Array<{ _: string }>;
+}
+
+export interface Quote {
+  quote: string;
+  author: string;
+}
+
+export interface ShortenedUrl {
+  shortUrl: string;
+}
+const COMMAND_LIST = [
+  "hi",
+  "ask",
+  "news",
+  "leaderboard",
+  "forums",
+  "events",
+  "help",
+] as const;
+export type CommandList = (typeof COMMAND_LIST)[number];
+
+const EVENT_LIST = [
+  "quiz",
+  "meme",
+  "quote",
+  "tech-news",
+  "site-update",
+] as const;
+export type EventList = (typeof EVENT_LIST)[number];
+type ProfileBotSettings = {
+  allowedcommand: CommandList[];
+  allowedevent: EventList[];
+  make_inactive: boolean;
+  allow_inbox: CommandList[];
+  id: string;
+  name: string;
+};
+export interface BotSettings {
+  host: ProfileBotSettings;
+  other: ProfileBotSettings[];
+}

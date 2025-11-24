@@ -1,21 +1,12 @@
-import { GNDCMemeGenerator } from "./meme-ai";
-import { GNDCQuizGenerator } from "./quiz-ai";
-import { GNDCRedisStorage } from "./storage";
-import { exampleQuiz } from "./utils";
+// import { GNDCMemeGenerator } from "./meme-ai.js";
+// import { GNDCQuizGenerator } from "./quiz-ai";
+import { GNDCRedisStorage } from "./storage.js";
 
 async function main() {
   //const generator = new GNDCMemeGenerator("mohamedconsole", "imgflip123#");
   const storage = new GNDCRedisStorage();
 
   // Test de connexion
-  const isConnected = await storage.ping();
-  console.log(`Redis: ${isConnected ? "✅ Connecté" : "❌ Déconnecté"}\n`);
-  //const res = await storage.save("quiz_test", "quiz", exampleQuiz, 259196);
-  //const res = await storage.get("quiz_test");
-  //const res = await storage.updateLeaderboard("bahir", 10);
-  //const res = await storage.flushAll();
-  const res = await storage.getLeaderboard(5);
-  console.log(res);
 
   //console.log("🎨 *Générateur de Mèmes Aléatoires GNDC*\n");
   //console.log("L'IA va choisir elle-même un sujet et créer un mème !\n");

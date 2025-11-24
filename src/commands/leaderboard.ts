@@ -1,7 +1,7 @@
 import { proto, WASocket } from "@whiskeysockets/baileys";
-import { BlogPostResponse, LeaderboardType } from "../types";
-import { gloBalCache } from "..";
-import config from "../utils";
+import { BlogPostResponse, LeaderboardType } from "../types/index.js";
+import { gloBalCache } from "../index.js";
+import config, { resolveTargetGroups } from "../utils.js";
 import dotenv from "dotenv";
 dotenv.config();
 /**
@@ -28,7 +28,13 @@ export async function execute(
   msg: proto.IWebMessageInfo,
   args: string[]
 ): Promise<void> {
-  if (from !== config.bot?.group_target) {
+  const ids = await resolveTargetGroups("allowedcommand", "leaderboard");
+  const isAllowed = ids.some((t) => t.id === from);
+  if (!isAllowed && from.endsWith("@g.us")) {
+    return;
+  }
+  const isAllowedInbox = ids[0].allow_inbox?.includes("leaderboard");
+  if (!isAllowedInbox) {
     return;
   }
   // Send typing indicator
@@ -58,10 +64,11 @@ export async function execute(
       from,
       {
         text: message || "pas de reponse !!",
-      },
-      {
-        quoted: msg,
+        mentions: [from],
       }
+      // {
+      //   quoted: { key: msg },
+      // }
     );
   } catch (error) {
     console.error("Error processing question:", error);

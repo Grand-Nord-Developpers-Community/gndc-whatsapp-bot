@@ -7,15 +7,17 @@ export abstract class GNDCBaseGenerator {
   protected gndcContext: string;
   protected model: string;
 
-  constructor() {
+  constructor({ model, context }: { model?: string; context?: string }) {
     const apiKey = process.env.OPENAI_KEY;
     const endpoint = "https://models.inference.ai.azure.com";
-    this.model = "gpt-4o";
+    this.model = model || "gpt-4o";
     this.client = new OpenAI({
       apiKey: apiKey,
       baseURL: endpoint,
     });
-    this.gndcContext = `Tu es un assistant créatif pour GNDC (Grand Nord Developers Community), une communauté de développeurs du Grand Nord Cameroun.
+    this.gndcContext =
+      context ||
+      `Tu es un assistant créatif pour GNDC (Grand Nord Developers Community), une communauté de développeurs du Grand Nord Cameroun.
 GNDC vise à :
 - Promouvoir l'innovation technologique
 - Partager des compétences en développement
@@ -50,6 +52,20 @@ Sois créatif, pertinent et engageant pour l'audience GNDC !`;
     return `${
       message ? message + "\n\n---\n" : ""
     }💻 *GNDC - Grand Nord Developers Community*\nSite : https://gndc.tech\nContact : contact@gndc.tech`;
+  }
+
+  //generate answer from a prompt
+  async output(prompt: string): Promise<string> {
+    const messages: OpenAI.Chat.Completions.ChatCompletionMessageParam[] = [
+      { role: "system", content: this.gndcContext },
+      { role: "user", content: prompt },
+    ];
+    try {
+      const response = await this.callOpenAI(messages);
+      return response.choices[0].message?.content || "";
+    } catch (error: any) {
+      return this.handleOpenAIError(error);
+    }
   }
 
   protected handleOpenAIError(error: any): string {

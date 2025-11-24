@@ -1,5 +1,5 @@
 import OpenAI from "openai";
-import { GNDCBaseGenerator } from "./ai";
+import { GNDCBaseGenerator } from "./ai.js";
 
 interface MemeTemplate {
   id: string;
@@ -30,7 +30,7 @@ export class GNDCMemeGenerator extends GNDCBaseGenerator {
   private memeTopics: string[];
 
   constructor(imgflipUsername: string, imgflipPassword: string) {
-    super();
+    super({ model: "gpt-4.1-mini" });
     this.imgflipUsername = imgflipUsername;
     this.imgflipPassword = imgflipPassword;
 

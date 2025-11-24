@@ -1,5 +1,5 @@
 import OpenAI from "openai";
-import { BaseResult, GNDCBaseGenerator } from "./ai";
+import { BaseResult, GNDCBaseGenerator } from "./ai.js";
 
 interface QuizOption {
   id: string;
@@ -26,7 +26,7 @@ export class GNDCQuizGenerator extends GNDCBaseGenerator {
   private tools: OpenAI.Chat.Completions.ChatCompletionTool[];
 
   constructor() {
-    super();
+    super({ model: "gpt-4.1-mini" });
 
     this.techDomains = [
       "Programmation Python",

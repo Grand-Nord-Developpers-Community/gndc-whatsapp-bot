@@ -6,7 +6,7 @@ import { WASocket } from "@whiskeysockets/baileys";
  */
 export const name = "hi";
 export const description = "Say hello.";
-import config from "../utils";
+import config from "../utils.js";
 /**
  * Sends a hello message to the user.
  * @param {WASocket} sock - WhatsApp socket instance
